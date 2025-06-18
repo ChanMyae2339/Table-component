@@ -1,84 +1,87 @@
-import React, { useMemo, useState, useRef, useEffect } from "react";
+import React, { useMemo, useState,  } from "react";
+import DataTable from "./DataTable";
+import db from "./db.json";
+import { COLUMNS } from "./columns";
+ 
 
 const SearchBox = ({
-  columnOptions = [{ key: "", label: "" }],
-  COLUMNS = [{ id: "", accessorKey: "", header: "" }],
-  MOCK_DATA = [{}],
+  columns = useMemo(() => COLUMNS, []),
   
 }) => {
-  const columns = useMemo(() => COLUMNS, []);
-  const data = useMemo(() => MOCK_DATA, []);
 
-  // Global filter
-  const [filter, setFilter] = useState("");
+  const [data, setData] = useState(db.users);
 
-  // Column select and value filter
-  const [selectedCol, setSelectedCol] = useState(columnOptions[0].key);
-  const [colValue, setColValue] = useState("");
-  const [showDropdown, setShowDropdown] = useState(false);
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [gender, setGender] = useState("");
+  const [age, setAge] = useState("");
+  const [filterQuery, setFilterQuery] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const inputRef = useRef();
-
-  // Unique values for selected column, filtered by input
-  const uniqueValues = useMemo(() => {
-    const values = data
-      .map((row) => row[selectedCol])
-      .filter((v) => v !== undefined && v !== null);
-    const set = new Set();
-    const filtered = [];
-    for (const v of values) {
-      const str = String(v);
-      if (
-        !set.has(str) &&
-        (!colValue || str.toLowerCase().includes(colValue.toLowerCase()))
-      ) {
-        set.add(str);
-        filtered.push(str);
-      }
-    }
-    return filtered;
-  }, [data, selectedCol, colValue]);
-
-  // Filtering logic
-  const filteredRows = useMemo(() => {
-    let filtered = data;
-
-    // Global filter
-    if (filter) {
-      filtered = filtered.filter((row) =>
-        Object.values(row)
-          .join(" ")
-          .toLowerCase()
-          .includes(filter.toLowerCase())
-      );
-    }
-
-    // Column value filter (exact match)
-    if (selectedCol && colValue) {
-      filtered = filtered.filter(
-        (row) =>
-          String(row[selectedCol]).toLowerCase() === colValue.toLowerCase()
-      );
-    }
-
-    return filtered;
-  }, [data, filter, selectedCol, colValue]);
 
   // Pagination
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-  const paginatedRows = filteredRows.slice((page - 1) * limit, page * limit);
+  const paginatedRows = data.slice((page - 1) * limit, page * limit);
+  const [totalItem,setTotalItems] = useState(data.length);
 
-  // Close dropdown on outside click
-  useEffect(() => {
-    function handleClick(e) {
-      if (inputRef.current && !inputRef.current.contains(e.target)) {
-        setShowDropdown(false);
-      }
+  //Api url
+  const apiUrl = "http://localhost:5000/users";
+
+  // Update filter query when gender or age changes
+  const updateFilterQuery = (newGender, newAge) => {
+    const filters = [];
+    if (newGender) filters.push(`gender=${newGender}`);
+    if (newAge) filters.push(`age=${newAge}`);
+    setFilterQuery(filters.length ? `&_${filters.join("&_")}` : "");
+  };
+
+  // Handle gender change
+  const handleGenderChange = (e) => {
+    const newGender = e.target.value;
+    setGender(newGender);
+    updateFilterQuery(newGender, age);
+  };
+
+  // Handle age change
+  const handleAgeChange = (e) => {
+    const newAge = e.target.value;
+    setAge(newAge);
+    updateFilterQuery(gender, newAge);
+  };
+
+  // Fetch data from API
+  const fetchData = async (customPage = page, customLimit = limit) => {
+    try {
+      setLoading(true);
+      const url = searchKeyword
+        ? `${apiUrl}?_page=${customPage}&_limit=${customLimit}&search=${searchKeyword}${filterQuery}`
+        : `${apiUrl}?_page=${customPage}&_limit=${customLimit}${filterQuery}`;
+
+      const response = await fetch(url);
+      const result = await response.json();
+
+      setData(result);
+
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
     }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
+  };
+
+  // Handle search
+  const handleSearch = () => {
+    fetchData();
+    console.log("Search Keyword:", searchKeyword);
+    console.log(gender, age);
+    console.log(filterQuery);
+    
+
+    setSearchKeyword("");
+    setGender("");
+    setAge(""); 
+    // console.log(data);
+  };
 
   return (
     <div className="p-4 overflow-auto">
@@ -87,66 +90,43 @@ const SearchBox = ({
         <div className="flex-1 flex justify-start">
           <input
             type="text"
-            placeholder="Global Search..."
+            placeholder={`${loading ? "Loading..." : "Search... "}`}
             className="border p-2 rounded w-full md:w-64 outline-none border-blue-300"
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
+            value={searchKeyword}
+            onChange={(e) => setSearchKeyword(e.target.value)}
+              onKeyDown={e => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  }}
           />
+        
         </div>
-        {/* Column select and value search on the right */}
-        <form
-          className="flex flex-row gap-2 flex-1 justify-end items-center"
-          autoComplete="off"
-        >
+        <div className="flex flex-row gap-2 flex-1 justify-end items-center">
+          <select
+            className="border rounded p-2 border-blue-300 outline-none"
+            value={gender}
+            onChange={handleGenderChange}
+          >
+            <option value="">Select Gender</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+
           <select
             className="border rounded p-2 border-blue-300"
-            value={selectedCol}
-            onChange={(e) => {
-              setSelectedCol(e.target.value);
-              setColValue("");
-              setShowDropdown(false);
-            }}
+            value={age}
+            onChange={handleAgeChange}
           >
-            {columnOptions.map((col) => (
-              <option key={col.key} value={col.key}>
-                {col.label}
-              </option>
-            ))}
+            <option value="">Select Age</option>
+            <option value="18-25">18-25</option>
+            <option value="26-35">26-35</option>
+            <option value="36-45">36-45</option>
+            <option value="46+">46+</option>
           </select>
-          <div className="relative" ref={inputRef}>
-            <input
-              type="text"
-              placeholder={`Search ${
-                columnOptions.find((c) => c.key === selectedCol)?.label
-              }`}
-              className="border rounded p-2 border-blue-300 w-36"
-              value={colValue}
-              onChange={(e) => {
-                setColValue(e.target.value);
-                setShowDropdown(true);
-              }}
-              onFocus={() => setShowDropdown(true)}
-            />
-            {showDropdown && uniqueValues.length > 0 && (
-              <div className="absolute left-0 right-0 mt-1 bg-white border rounded shadow z-10 max-h-40 overflow-y-auto">
-                {uniqueValues.map((val, idx) => (
-                  <div
-                    key={idx}
-                    className="px-3 py-2 hover:bg-blue-100 cursor-pointer truncate"
-                    onClick={() => {
-                      setColValue(val);
-                      setShowDropdown(false);
-                    }}
-                  >
-                    {val}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          {/* Search button removed */}
-        </form>
+        </div>
       </div>
+
       <DataTable
         dataRows={paginatedRows}
         dataColumns={columns}
@@ -154,9 +134,10 @@ const SearchBox = ({
         setPage={setPage}
         limit={limit}
         setLimit={setLimit}
-        totalItems={filteredRows.length}
+        totalItems={totalItem}
       />
     </div>
   );
 };
+
 export default SearchBox;

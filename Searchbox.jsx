@@ -6,11 +6,11 @@ import { COLUMNS } from "./columns";
 
 const SearchBox = ({
   columns = useMemo(() => COLUMNS, []),
-  apiUrl = "http://localhost:5000/users",  
+  apiUrl = "http://localhost:5000/users", 
+  data = useMemo(()=>db.users,[]) 
   
 }) => {
 
-  const [data, setData] = useState(db.users);
 
   const [searchKeyword, setSearchKeyword] = useState("");
   const [gender, setGender] = useState("");
@@ -25,7 +25,8 @@ const SearchBox = ({
   const paginatedRows = data.slice((page - 1) * limit, page * limit);
   const [totalItem,setTotalItems] = useState(data.length);
 
-  //Api url
+  //Api Data
+  const [apiData,setApiData]=useState([]);
   
   // Update filter query when gender or age changes
   const updateFilterQuery = (newGender, newAge) => {
@@ -60,7 +61,7 @@ const SearchBox = ({
       const response = await fetch(url);
       const result = await response.json();
 
-      setData(result);
+      setApiData(result);
 
     } catch (error) {
       console.error("Error fetching data:", error);

@@ -6,6 +6,7 @@ import { COLUMNS } from "./columns";
 
 const SearchBox = ({
   columns = useMemo(() => COLUMNS, []),
+  apiUrl = "http://localhost:5000/users",  
   
 }) => {
 
@@ -25,8 +26,7 @@ const SearchBox = ({
   const [totalItem,setTotalItems] = useState(data.length);
 
   //Api url
-  const apiUrl = "http://localhost:5000/users";
-
+  
   // Update filter query when gender or age changes
   const updateFilterQuery = (newGender, newAge) => {
     const filters = [];

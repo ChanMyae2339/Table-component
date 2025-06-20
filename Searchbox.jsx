@@ -1,33 +1,46 @@
-import React, { useMemo, useState,  } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import DataTable from "./DataTable";
-import db from "./db.json";
 import { COLUMNS } from "./columns";
+
+const Users = () => {
+  const columns = useMemo(() => COLUMNS, []);
+
+  const [apiData, setApiData] = useState([]);
+
+  //Api url
+  const apiUrl = "http://localhost:5000/users";
+
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(apiUrl);
+        const result = await response.json();
+        setApiData(result);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchInitialData();
+  }, []);
+
  
-
-const SearchBox = ({
-  columns = useMemo(() => COLUMNS, []),
-  apiUrl = "http://localhost:5000/users", 
-  data = useMemo(()=>db.users,[]) 
-  
-}) => {
-
 
   const [searchKeyword, setSearchKeyword] = useState("");
   const [gender, setGender] = useState("");
   const [age, setAge] = useState("");
   const [filterQuery, setFilterQuery] = useState("");
-  const [loading, setLoading] = useState(false);
-
 
   // Pagination
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
-  const paginatedRows = data.slice((page - 1) * limit, page * limit);
-  const [totalItem,setTotalItems] = useState(data.length);
+  const [limit, setLimit] = useState(15);
+  const paginatedRows = apiData.slice((page - 1) * limit, page * limit);
+  const totalItem = apiData.length;
 
-  //Api Data
-  const [apiData,setApiData]=useState([]);
-  
   // Update filter query when gender or age changes
   const updateFilterQuery = (newGender, newAge) => {
     const filters = [];
@@ -50,7 +63,7 @@ const SearchBox = ({
     updateFilterQuery(gender, newAge);
   };
 
-  // Fetch data from API
+   // Fetch data from API
   const fetchData = async (customPage = page, customLimit = limit) => {
     try {
       setLoading(true);
@@ -62,7 +75,6 @@ const SearchBox = ({
       const result = await response.json();
 
       setApiData(result);
-
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -76,12 +88,10 @@ const SearchBox = ({
     console.log("Search Keyword:", searchKeyword);
     console.log(gender, age);
     console.log(filterQuery);
-    
 
     setSearchKeyword("");
     setGender("");
-    setAge(""); 
-    // console.log(data);
+    setAge("");
   };
 
   return (
@@ -95,13 +105,12 @@ const SearchBox = ({
             className="border p-2 rounded w-full md:w-64 outline-none border-blue-300"
             value={searchKeyword}
             onChange={(e) => setSearchKeyword(e.target.value)}
-              onKeyDown={e => {
-    if (e.key === "Enter") {
-      handleSearch();
-    }
-  }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleSearch();
+              }
+            }}
           />
-        
         </div>
         <div className="flex flex-row gap-2 flex-1 justify-end items-center">
           <select
@@ -141,4 +150,4 @@ const SearchBox = ({
   );
 };
 
-export default SearchBox;
+export default Users;

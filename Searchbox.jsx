@@ -2,13 +2,15 @@ import React, { useEffect, useMemo, useState } from "react";
 import DataTable from "./DataTable";
 import { COLUMNS } from "./columns";
 
-const Users = () => {
-  const columns = useMemo(() => COLUMNS, []);
+const Searchbox = (
+  columns = useMemo(() => COLUMNS, []),
+  apiUrl = "http://localhost:5000/users",
+
+) => {
 
   const [apiData, setApiData] = useState([]);
 
-  //Api url
-  const apiUrl = "http://localhost:5000/users";
+  
 
   const [loading, setLoading] = useState(false);
 
@@ -150,4 +152,4 @@ const Users = () => {
   );
 };
 
-export default Users;
+export default Searchbox;

@@ -2,8 +2,13 @@ import React, { useMemo, useEffect, useState } from "react";
 import DataTable from "./DataTable.jsx";
 import { COLUMNS } from "./columns.ts";
 
-const Searchbox = ({ apiUrl ="http://localhost:3000/users",
-   columns =  COLUMNS }) => {
+const Searchbox = ({ 
+  apiUrl ="http://localhost:3000/users",
+   columns =  COLUMNS,
+   hidingPriority = ["email", "ip_address", "age", "gender", "last_name"],
+}) => {
+
+
    columns = useMemo(() => columns, []);
 
   const [apiData, setApiData] = useState([]);
@@ -136,6 +141,7 @@ const Searchbox = ({ apiUrl ="http://localhost:3000/users",
       <DataTable
         dataRows={paginatedRows}
         dataColumns={columns}
+        hidingPriority={hidingPriority}
         page={page}
         setPage={setPage}
         limit={limit}

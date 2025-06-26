@@ -5,6 +5,7 @@ import PaginationComponent from "./PaginationComponent.jsx";
 const DataTable = ({
   dataRows = [],
   dataColumns = [],
+  hidingPriority,
   page,
   setPage,
   limit,
@@ -17,6 +18,7 @@ const DataTable = ({
     <ReactTable
   dataRows={dataRows}
   dataColumns={dataColumns}
+  hidingPriority={hidingPriority}
  
 />
 

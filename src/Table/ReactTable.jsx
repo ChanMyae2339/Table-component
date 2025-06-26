@@ -10,10 +10,7 @@ import { TbChevronsRight } from "react-icons/tb";
 import ExpandableComponent from "./ExpandableComponent.jsx";
 import { AnimatePresence } from "framer-motion";
 
-const ReactTable = ({ dataRows, dataColumns,
-   hidingPriority = ["email", "ip_address", "age", "gender", "last_name"],
-  
-}) => {
+const ReactTable = ({ dataRows, dataColumns, hidingPriority }) => {
   const [expanded, setExpanded] = useState({});
   const [visibleColumnIds, setVisibleColumnIds] = useState([]);
 

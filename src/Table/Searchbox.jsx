@@ -141,7 +141,6 @@ const Searchbox = ({
       <DataTable
         dataRows={paginatedRows}
         dataColumns={columns}
-        hidingPriority={hidingPriority}
         page={page}
         setPage={setPage}
         limit={limit}

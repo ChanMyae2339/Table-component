@@ -10,7 +10,7 @@ import { TbChevronsRight } from "react-icons/tb";
 import ExpandableComponent from "./ExpandableComponent.jsx";
 import { AnimatePresence } from "framer-motion";
 
-const ReactTable = ({ dataRows, dataColumns, hidingPriority }) => {
+const ReactTable = ({ dataRows, dataColumns }) => {
   const [expanded, setExpanded] = useState({});
   const [visibleColumnIds, setVisibleColumnIds] = useState([]);
 
@@ -20,14 +20,9 @@ const ReactTable = ({ dataRows, dataColumns, hidingPriority }) => {
     const updateVisibleColumns = () => {
       const screenWidth = window.innerWidth;
 
-      let hiddenCount = 0;
-      let approxColWidth = 150;
-      let maxCols = Math.floor(screenWidth / approxColWidth);
-      hiddenCount = Math.max(0, dataColumns.length - maxCols);
-      const hiddenColumns = hidingPriority.slice(0, hiddenCount);
-      const visibleColumns = dataColumns.filter(
-        (col) => !hiddenColumns.includes(col.accessorKey)
-      );
+      const approxColWidth = 150;
+      const maxCols = Math.floor(screenWidth / approxColWidth);  
+      const visibleColumns = dataColumns.slice(0,maxCols);
 
       setVisibleColumnIds(
         visibleColumns.map((col) => col.id || col.accessorKey)

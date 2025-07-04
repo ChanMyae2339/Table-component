@@ -1,6 +1,6 @@
 {
   "name": "thurain123-table-component",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A customizable and reusable React table component with features like sorting, pagination, and expandable rows. Built with React Table (TanStack Table), Framer Motion, and Rollup.",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
